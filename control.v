@@ -1,6 +1,7 @@
 module control(
     input clk,
     input command, // Current command the PC is pointing to
+    input Dout, // output register of Program Data
     output reg DPEnable, DEnable, DOutEnable, BCountEnable,
     DPDecInc, DDecInc, PCDecInc, BCountDecInc,
     DInChoose, LdPC, LdOut, ResetBCount
@@ -32,16 +33,47 @@ module control(
     q54 = 4'd20,
     q55 = 4'd21,
     q56 = 4'd22
-    q6 = 4'd23
-    q61 = 4'd24
-    q7 = 4'd25
-    stop = 4'd26
+    q6 = 4'd23,
+    q61 = 4'd24,
+    q7 = 4'd25,
+    stop = 4'd26,
+    INVALID = 4'b111111,
+    smaller = 4'b0000,
+    greater = 4'b0001,
+    plus = 4'b0010,
+    minus = 4'b0011,
+    openBracket = 4'b0100,
+    closeBracket = 4'b0101,
+    dot = 4'b0110,
+    comma = 4'b0111;
+    
+    
     
     // Next state logic aka our state table
     always@(*)
     begin: state_table 
-            case (current_state)
-
+        case (current_state)
+           start: next_state <= read;
+            read: begin
+                case (Dout)
+                    smaller: next_state <= q0;
+                    greater: next_state <= q1;
+                    plus: next_state <= q2;
+                    minus: next_state <= q3;
+                    openBracket: next_state <= q4;
+                    closeBracket: next_state <= q5;
+                    dot: next_state <= q6;
+                    comma: next_state <= q7;
+                    default: next_state <= INVALID;
+                endcase
+            end
+            q0: next_state <= PCinc;
+            q1: next_state <= PCinc;
+            q2: next_state <= q21;
+            q3: next_state <= q31;
+            q21: next_state <= PCinc;
+            q31: next_state <= PCinc;
+            ////// DO STUFF
             default: next_state = start;
         endcase
     end // state_table
