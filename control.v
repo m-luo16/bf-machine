@@ -2,6 +2,9 @@ module control(
     input clk,
     input command, // Current command the PC is pointing to
     input Dout, // output register of Program Data
+    input [7:0] BCount
+    input inputDone,
+
     output reg DPEnable, DEnable, DOutEnable, BCountEnable,
     DPDecInc, DDecInc, PCDecInc, BCountDecInc,
     DInChoose, LdPC, LdOut, ResetBCount
@@ -47,15 +50,13 @@ module control(
     dot = 4'b0110,
     comma = 4'b0111;
     
-    
-    
     // Next state logic aka our state table
     always@(*)
     begin: state_table 
         case (current_state)
            start: next_state <= read;
             read: begin
-                case (Dout)
+                case (out)
                     smaller: next_state <= q0;
                     greater: next_state <= q1;
                     plus: next_state <= q2;
@@ -73,7 +74,55 @@ module control(
             q3: next_state <= q31;
             q21: next_state <= PCinc;
             q31: next_state <= PCinc;
-            ////// DO STUFF
+            q4: next_state <= q41;
+            q41: begin
+                case (Dout)
+                    0: next_state = q42;
+                    default: next_state = PCinc;
+                endcase
+            end
+            q42: next_state = q43;
+            q43: begin
+                case (out)
+                    closeBracket: next_state = q44;
+                    openBracket: next_state = q42;
+                    default: next_state = q46;
+                endcase
+            end
+            q44: next_state = q45;
+            q45: begin
+                case (BCount)
+                    0: next_state = PCinc;
+                    default: next_state = q45;
+                endcase
+            end
+            q46: next_state = q43;
+            q5: next_state = q51;
+            q51: begin
+                case (Dout)
+                    0: next_state = PCinc;
+                    default: next_state = q52;
+                endcase
+            end
+            q52: next_state = q53;
+            q53: begin
+                case (out)
+                    closeBracket: next_state = q52;
+                    openBracket: next_state = q54;
+                    default: next_state = q56;
+                endcase
+            end
+            q54: next_state = q55;
+            q55: begin
+                case (BCount)
+                    0: next_state = PCinc;
+                    default: next_state = q53;
+                endcase
+            end
+            q56: next_state = q53;
+            q6: next_state = q61;
+            q61: next_state = PCinc;
+            q7: next_state = inputDone ? PCInc : q7;
             default: next_state = start;
         endcase
     end // state_table
