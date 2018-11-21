@@ -65,6 +65,7 @@ module control(
                     closeBracket: next_state <= q5;
                     dot: next_state <= q6;
                     comma: next_state <= q7;
+                    stop: next_state <= stop;
                     default: next_state <= INVALID;
                 endcase
             end
@@ -123,6 +124,7 @@ module control(
             q6: next_state = q61;
             q61: next_state = PCinc;
             q7: next_state = inputDone ? PCInc : q7;
+            stop: next_state = start;
             default: next_state = start;
         endcase
     end // state_table
