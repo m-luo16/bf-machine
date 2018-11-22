@@ -1,9 +1,10 @@
 module control(
-    input clk,
-    input command, // Current command the PC is pointing to
-    input Dout, // output register of Program Data
-    input [7:0] BCount
-    input inputDone,
+   input clk,
+   inputDone,
+	reset,
+	input [7:0] Dout,  // output register of Program Data
+	input [7:0] BCount,
+	input [3:0] out,
 
     output reg DPEnable, DEnable, DOutEnable, BCountEnable,
     DPDecInc, DDecInc, PCDecInc, BCountDecInc,
@@ -13,34 +14,35 @@ module control(
     reg [5:0] current_state, next_state; 
     
     localparam
-    start = 4'd0, // Start state
-    read = 4'd1, // Reading the command that PC is pointing to
-    PCinc = 4'd2, // Increment the PC to the next command
-    q0 = 4'd3, // Decrement the data pointer
-    q1 = 4'd4, // Increment the data pointer
-    q2 = 4'd5, // Load Dout with the value at the data pointer
-    q21 = 4'd6, // Increment Dout by 1
-    q3 = 4'd7, // Load Dout with the value at the data pointer
-    q31 = 4'd8, // Decrement Dout by 1
-    q4 = 4'd9, // Start of "loop". Load Dout with the value at the data pointer.
-    q41 = 4'd10, // Check value of Dout. 
-    q42 = 4'd11,
-    q43 = 4'd12,
-    q44 = 4'd13,
-    q45 = 4'd14,
-    q46 = 4'd15,
-    q5 = 4'd16,
-    q51 = 4'd17
-    q52 = 4'd18,
-    q53 = 4'd19,
-    q54 = 4'd20,
-    q55 = 4'd21,
-    q56 = 4'd22
-    q6 = 4'd23,
-    q61 = 4'd24,
-    q7 = 4'd25,
-    stop = 4'd26,
-    INVALID = 4'b111111,
+    start = 6'd0, // Start state
+    read = 6'd1, // Reading the command that PC is pointing to
+    PCinc = 6'd2, // Increment the PC to the next command
+    q0 = 6'd3, // Decrement the data pointer
+    q1 = 6'd4, // Increment the data pointer
+    q2 = 6'd5, // Load Dout with the value at the data pointer
+    q21 = 6'd6, // Increment Dout by 1
+    q3 = 6'd7, // Load Dout with the value at the data pointer
+    q31 = 6'd8, // Decrement Dout by 1
+    q4 = 6'd9, // Start of "loop". Load Dout with the value at the data pointer.
+    q41 = 6'd10, // Check value of Dout. 
+    q42 = 6'd11,
+    q43 = 6'd12,
+    q44 = 6'd13,
+    q45 = 6'd14,
+    q46 = 6'd15,
+    q5 = 6'd16,
+    q51 = 6'd17,
+    q52 = 6'd18,
+    q53 = 6'd19,
+    q54 = 6'd20,
+    q55 = 6'd21,
+    q56 = 6'd22,
+    q6 = 6'd23,
+    q61 = 6'd24,
+    q7 = 6'd25,
+	 q71 = 6'd26,
+    stop = 6'd27,
+    INVALID = 6'b111111,
     smaller = 4'b0000,
     greater = 4'b0001,
     plus = 4'b0010,
@@ -52,9 +54,15 @@ module control(
     
     // Next state logic aka our state table
     always@(*)
+
     begin: state_table 
+	 	if (reset) begin
+		next_state = start;
+	end
+	else
         case (current_state)
-           start: next_state <= read;
+           start: next_state = read;
+			  PCinc: next_state = read;
             read: begin
                 case (out)
                     smaller: next_state <= q0;
@@ -123,13 +131,13 @@ module control(
             q56: next_state = q53;
             q6: next_state = q61;
             q61: next_state = PCinc;
-            q7: next_state = inputDone ? PCInc : q7;
+            q7: next_state = inputDone ? q71 : q7;
+				q71: next_state = !inputDone ? PCinc: q71;
             stop: next_state = start;
             default: next_state = start;
         endcase
     end // state_table
-   
-
+	
     // Output logic aka all of our datapath control signals
     always @(*)
     begin: enable_signals
