@@ -49,3 +49,39 @@ module BCount (clock, out, BCountDecInc, BCountEnable, reset);
 	end
 
 endmodule
+
+module DP (clock, in, out, DPEnable, reset);
+	input clock, DPEnable, reset;
+	input [15:0] in;
+	output reg [15:0] out;
+
+	always @(posedge clock)
+	begin
+		if (reset)
+	  	begin
+	  		out <= 0;
+		end
+		else if (DPEnable)
+		begin
+			out <= in;
+		end
+	end
+endmodule
+
+module Dout (clock, in, out, DOutEnable, reset);
+	input clock, DOutEnable, reset;
+	input [15:0] in;
+	output reg [15:0] out;
+
+	always @(posedge clock)
+	begin
+		if (reset)
+		begin
+			out <= 0;
+		end
+		else if (DOutEnable)
+		begin
+			out <= in
+		end
+	end
+endmodule
