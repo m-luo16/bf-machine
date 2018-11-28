@@ -59,28 +59,13 @@ module main(clock, PMinputDone);
 				  .DInChoose(), 
 				  .LdPC(), 
 				  .LdOut(), 
-				  .ResetBCount() )
+				  .ResetBCount() );
+
+
+
+	
 
 endmodule
-
-
-
-
-
-
-
-
-input clk,
-   inputDone,
-	reset,
-	input [7:0] Dout,  // output register of Program Data
-	input [7:0] BCount,
-	input [3:0] out,
-
-    output reg DPEnable, DEnable, DOutEnable, BCountEnable,
-    DPDecInc, DDecInc, PCDecInc, BCountDecInc,
-    DInChoose, LdPC, LdOut, ResetBCount
-    );
 
 
 
