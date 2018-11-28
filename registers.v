@@ -68,7 +68,7 @@ module DP (clock, in, out, DPEnable, reset);
 	end
 endmodule
 
-module Dout (clock, in, out, DOutEnable, reset);
+module DOut (clock, in, out, DOutEnable, reset);
 	input clock, DOutEnable, reset;
 	input [15:0] in;
 	output reg [15:0] out;
