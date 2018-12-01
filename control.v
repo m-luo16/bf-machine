@@ -42,6 +42,8 @@ module control(
     q7 = 6'd25,
 	 q71 = 6'd26,
     stop = 6'd27,
+	 q47 = 6'd28, // added after bug found in control diagram
+	 q57 = 6'd29, // ''    ''   ...
     INVALID = 6'b111111,
     smaller = 4'b0000,
     greater = 4'b0001,
@@ -106,7 +108,8 @@ module control(
                     default: next_state = q45;
                 endcase
             end
-            q46: next_state = q43;
+            q46: next_state = q47;
+				q47: next_state = q43;
             q5: next_state = q51;
             q51: begin
                 case (Dout)
@@ -129,7 +132,8 @@ module control(
                     default: next_state = q53;
                 endcase
             end
-            q56: next_state = q53;
+            q56: next_state = q57;
+				q57: next_state = q53;
             q6: next_state = q61;
             q61: next_state = PCinc;
             q7: next_state = inputDone ? q71 : q7;
@@ -211,6 +215,9 @@ module control(
         LdPC = 1;
         PCDecInc = 0;
         end
+		  q47: begin
+		  LdPC = 1;
+		  PCDecInc = 0;
         q5: begin
         DOutEnable = 1;
         ResetBCount = 1;
@@ -235,6 +242,9 @@ module control(
         LdPC = 1;
         PCDecInc = 1;
         end
+		  q57: begin
+		  LdPC = 1;
+		  PCDecInc = 1;
         q6: begin
         DOutEnable = 1;
         end
