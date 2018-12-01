@@ -12,7 +12,8 @@ module control(
     );
 
     reg [5:0] current_state, next_state; 
-    
+	 reg [15:0] reset_memory_counter;
+
     localparam
     start = 6'd0, // Start state
     read = 6'd1, // Reading the command that PC is pointing to
@@ -207,7 +208,7 @@ module control(
         end
         q44: begin
         BCountEnable = 1;
-        BCountDecInc = 1;
+        BCountDecInc = 0;
         end
         q45: begin
         end
