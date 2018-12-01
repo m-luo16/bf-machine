@@ -50,7 +50,8 @@ module control(
     openBracket = 4'b0100,
     closeBracket = 4'b0101,
     dot = 4'b0110,
-    comma = 4'b0111;
+    comma = 4'b0111,
+	 stop_c = 4'b1111;
     
     // Next state logic aka our state table
     always@(*)
@@ -73,7 +74,7 @@ module control(
                     closeBracket: next_state <= q5;
                     dot: next_state <= q6;
                     comma: next_state <= q7;
-                    stop: next_state <= stop;
+                    stop_c: next_state <= stop;
                     default: next_state <= INVALID;
                 endcase
             end
@@ -246,7 +247,8 @@ module control(
         end
         stop: begin
         end
-        // default:    // don't need default since we already made sure all of our outputs were assigned a value at the start of the always block
+        default: begin
+		  end
         endcase
     end // enable_signals
    

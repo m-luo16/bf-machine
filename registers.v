@@ -13,7 +13,7 @@ module PC (clock, in, out, LdPC, reset);
 		begin
 			out <= 16'b0;
 		end
-		else if (LdPc)
+		else if (LdPC)
 		begin
 			out <= in;
 		end
@@ -50,6 +50,8 @@ module BCount (clock, out, BCountDecInc, BCountEnable, reset);
 
 endmodule
 
+
+
 module DP (clock, in, out, DPEnable, reset);
 	input clock, DPEnable, reset;
 	input [15:0] in;
@@ -68,7 +70,7 @@ module DP (clock, in, out, DPEnable, reset);
 	end
 endmodule
 
-module Dout (clock, in, out, DOutEnable, reset);
+module DOut (clock, in, out, DOutEnable, reset);
 	input clock, DOutEnable, reset;
 	input [15:0] in;
 	output reg [15:0] out;
@@ -81,7 +83,7 @@ module Dout (clock, in, out, DOutEnable, reset);
 		end
 		else if (DOutEnable)
 		begin
-			out <= in
+			out <= in;
 		end
 	end
 endmodule

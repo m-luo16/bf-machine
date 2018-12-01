@@ -1,5 +1,5 @@
-module DataPtrALU (in, DPDecInc, out);
 
+module DataPtrALU (in, DPDecInc, out);
 
 	input [15:0] in;
 	input DPDecInc;
