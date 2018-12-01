@@ -15,36 +15,36 @@ module control(
 	 reg [15:0] reset_memory_counter;
 
     localparam
-    start = 6'd0, // Start state
+    start = 6'd0, // Start state: reset PC, data_ptr amd memory to zero
     read = 6'd1, // Reading the command that PC is pointing to
     PCinc = 6'd2, // Increment the PC to the next command
     q0 = 6'd3, // Decrement the data pointer
     q1 = 6'd4, // Increment the data pointer
     q2 = 6'd5, // Load Dout with the value at the data pointer
-    q21 = 6'd6, // Increment Dout by 1
+    q21 = 6'd6, // Increment value at pointer by 1
     q3 = 6'd7, // Load Dout with the value at the data pointer
-    q31 = 6'd8, // Decrement Dout by 1
+    q31 = 6'd8, // Decrement value by 1
     q4 = 6'd9, // Start of "loop". Load Dout with the value at the data pointer.
     q41 = 6'd10, // Check value of Dout. 
-    q42 = 6'd11,
-    q43 = 6'd12,
-    q44 = 6'd13,
-    q45 = 6'd14,
-    q46 = 6'd15,
-    q5 = 6'd16,
-    q51 = 6'd17,
-    q52 = 6'd18,
-    q53 = 6'd19,
-    q54 = 6'd20,
-    q55 = 6'd21,
-    q56 = 6'd22,
-    q6 = 6'd23,
-    q61 = 6'd24,
-    q7 = 6'd25,
-	 q71 = 6'd26,
-    stop = 6'd27,
-	 q47 = 6'd28, // added after bug found in control diagram
-	 q57 = 6'd29, // ''    ''   ...
+    q42 = 6'd11, // Dout = 0. We don't execute any instructions until we find the right closing brace. Start BCount at 1. Increment the PC.
+    q43 = 6'd12, // Read the command that PC is now pointing to. 
+    q44 = 6'd13, // Command read was a "]", decrement BCount by 1. 
+    q45 = 6'd14, // Check the value of BCount. Move to PCInc if BCount = 0. (We found the matching close brace). Otherwise move to q47 (forward).
+    q46 = 6'd15, // Command wasn't a "[" or a "]", increment the PC, go forward to q43 and read the next instruction. (Non brace commands are ignored)
+    q47 = 6'd28, // BCount wasn't 0 after the previous "]" (Haven't found correct closing brace). Increment PC and try again. 
+    q5 = 6'd16, // End of "loop". Load Dout with the value at the data pointer.
+    q51 = 6'd17, // Check value of Dout.
+    q52 = 6'd18, // Dout != 0. We want to go backwards and find the appropriate opening brace. Start BCount at 1. Decrement the PC. 
+    q53 = 6'd19, // Read the command that PC is now pointing to.
+    q54 = 6'd20, // Command read was a "[", decrement BCount by 1.
+    q55 = 6'd21, // Check the value of BCount. Move to PCInc if BCount = 0. (We found the matching open brace). Otherwise move to q57 (backward).
+    q56 = 6'd22, // Command wasn't a "[" or a "]", increment the PC, go back to q53 and read the next instruction. (Non brace commands are ignored)
+	q57 = 6'd29, // BCount wasn't a 0 ofter the previous "[" (Haven't found correct opening brace). Decrement PC and try again. 
+    q6 = 6'd23, // Get ready to display whatever data pointer is pointing to. 
+    q61 = 6'd24, // Load Dout onto out.
+    q7 = 6'd25, // Get ready to store the value on input switches to whatever data pointer is pointing to. 
+	q71 = 6'd26, // Load the value on input switches. Increment PC after. 
+    stop = 6'd27, // PC command was stop. Transition to start and get ready to do more commands. 
     INVALID = 6'b111111,
     smaller = 4'b0000,
     greater = 4'b0001,
@@ -227,7 +227,7 @@ module control(
         end
         q52: begin
         BCountEnable = 1;
-        BCountDecInc = 1;
+        BCountDecInc = 0;
         LdPC = 1;
         PCDecInc = 1;
         end
