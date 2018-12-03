@@ -1,14 +1,15 @@
 module control(
    input clk,
-   inputDone,
+   inputDone, // high if the input from the switches is done (during "," operation), low otherwise
 	reset,
+	go, // start the excecution of the program. The state of the FC should be "hold"
 	input [7:0] Dout,  // output register of Program Data
 	input [7:0] BCount,
-	input [3:0] out,
+	input [3:0] in,
 
     output reg DPEnable, DEnable, DOutEnable, BCountEnable,
     DPDecInc, DDecInc, PCDecInc, BCountDecInc,
-    DInChoose, LdPC, LdOut, ResetBCount
+    DInChoose, LdPC, LdOut, ResetBCount, ResetOutsideCounters, WipeData
     );
 
     reg [5:0] current_state, next_state; 
@@ -16,35 +17,37 @@ module control(
 
     localparam
     start = 6'd0, // Start state: reset PC, data_ptr amd memory to zero
-    read = 6'd1, // Reading the command that PC is pointing to
-    PCinc = 6'd2, // Increment the PC to the next command
-    q0 = 6'd3, // Decrement the data pointer
-    q1 = 6'd4, // Increment the data pointer
-    q2 = 6'd5, // Load Dout with the value at the data pointer
-    q21 = 6'd6, // Increment value at pointer by 1
-    q3 = 6'd7, // Load Dout with the value at the data pointer
-    q31 = 6'd8, // Decrement value by 1
-    q4 = 6'd9, // Start of "loop". Load Dout with the value at the data pointer.
-    q41 = 6'd10, // Check value of Dout. 
-    q42 = 6'd11, // Dout = 0. We don't execute any instructions until we find the right closing brace. Start BCount at 1. Increment the PC.
-    q43 = 6'd12, // Read the command that PC is now pointing to. 
-    q44 = 6'd13, // Command read was a "]", decrement BCount by 1. 
-    q45 = 6'd14, // Check the value of BCount. Move to PCInc if BCount = 0. (We found the matching close brace). Otherwise move to q47 (forward).
-    q46 = 6'd15, // Command wasn't a "[" or a "]", increment the PC, go forward to q43 and read the next instruction. (Non brace commands are ignored)
-    q47 = 6'd28, // BCount wasn't 0 after the previous "]" (Haven't found correct closing brace). Increment PC and try again. 
-    q5 = 6'd16, // End of "loop". Load Dout with the value at the data pointer.
-    q51 = 6'd17, // Check value of Dout.
-    q52 = 6'd18, // Dout != 0. We want to go backwards and find the appropriate opening brace. Start BCount at 1. Decrement the PC. 
-    q53 = 6'd19, // Read the command that PC is now pointing to.
-    q54 = 6'd20, // Command read was a "[", decrement BCount by 1.
-    q55 = 6'd21, // Check the value of BCount. Move to PCInc if BCount = 0. (We found the matching open brace). Otherwise move to q57 (backward).
-    q56 = 6'd22, // Command wasn't a "[" or a "]", increment the PC, go back to q53 and read the next instruction. (Non brace commands are ignored)
-	q57 = 6'd29, // BCount wasn't a 0 ofter the previous "[" (Haven't found correct opening brace). Decrement PC and try again. 
-    q6 = 6'd23, // Get ready to display whatever data pointer is pointing to. 
-    q61 = 6'd24, // Load Dout onto out.
-    q7 = 6'd25, // Get ready to store the value on input switches to whatever data pointer is pointing to. 
-	q71 = 6'd26, // Load the value on input switches. Increment PC after. 
-    stop = 6'd27, // PC command was stop. Transition to start and get ready to do more commands. 
+	 h1 = 6'd1, 
+	 hold = 6'd2,
+    read = 6'd3, // Reading the command that PC is pointing to
+    PCinc = 6'd4, // Increment the PC to the next command
+    q0 = 6'd5, // Decrement the data pointer
+    q1 = 6'd6, // Increment the data pointer
+    q2 = 6'd7, // Load Dout with the value at the data pointer
+    q21 = 6'd8, // Increment value at pointer by 1
+    q3 = 6'd9, // Load Dout with the value at the data pointer
+    q31 = 6'd10, // Decrement value by 1
+    q4 = 6'd11, // Start of "loop". Load Dout with the value at the data pointer.
+    q41 = 6'd12, // Check value of Dout. 
+    q42 = 6'd13, // Dout = 0. We don't execute any instructions until we find the right closing brace. Start BCount at 1. Increment the PC.
+    q43 = 6'd14, // Read the command that PC is now pointing to. 
+    q44 = 6'd15, // Command read was a "]", decrement BCount by 1. 
+    q45 = 6'd16, // Check the value of BCount. Move to PCInc if BCount = 0. (We found the matching close brace). Otherwise move to q47 (forward).
+    q46 = 6'd17, // Command wasn't a "[" or a "]", increment the PC, go forward to q43 and read the next instruction. (Non brace commands are ignored)
+    q47 = 6'd18, // BCount wasn't 0 after the previous "]" (Haven't found correct closing brace). Increment PC and try again. 
+    q5 = 6'd19, // End of "loop". Load Dout with the value at the data pointer.
+    q51 = 6'd20, // Check value of Dout.
+    q52 = 6'd21, // Dout != 0. We want to go backwards and find the appropriate opening brace. Start BCount at 1. Decrement the PC. 
+    q53 = 6'd22, // Read the command that PC is now pointing to.
+    q54 = 6'd23, // Command read was a "[", decrement BCount by 1.
+    q55 = 6'd24, // Check the value of BCount. Move to PCInc if BCount = 0. (We found the matching open brace). Otherwise move to q57 (backward).
+    q56 = 6'd25, // Command wasn't a "[" or a "]", increment the PC, go back to q53 and read the next instruction. (Non brace commands are ignored)
+	 q57 = 6'd26, // BCount wasn't a 0 ofter the previous "[" (Haven't found correct opening brace). Decrement PC and try again. 
+    q6 = 6'd27, // Get ready to display whatever data pointer is pointing to. 
+    q61 = 6'd28, // Load Dout onto out.
+    q7 = 6'd29, // Get ready to store the value on input switches to whatever data pointer is pointing to. 
+	 q71 = 6'd30, // Load the value on input switches. Increment PC after. 
+    stop = 6'd31, // PC command was stop. Transition to start and get ready to do more commands. 
     INVALID = 6'b111111,
     smaller = 4'b0000,
     greater = 4'b0001,
@@ -65,7 +68,9 @@ module control(
 	end
 	else
         case (current_state)
-           start: next_state = read;
+           start: next_state = hold1;
+			  h1: next_state = hold;
+			  hold: next_state = go? PCinc: hold;
 			  PCinc: next_state = read;
             read: begin
                 case (out)
@@ -160,10 +165,18 @@ module control(
         LdPC = 0;
         LdOut = 0;
         ResetBCount = 0;
+		  ResetOutsideCounters = 0;
+		  WipeData = 0;
 
         case (current_state)
         start: begin
+			ResetOutsideCounters= 1;
         end
+		  h1: begin
+		  end
+		  hold: begin
+			WipeData = 1; // the machine will be in this state until go is high
+		  end
         read: begin
         end
         PCinc: begin

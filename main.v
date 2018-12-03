@@ -11,26 +11,21 @@
 // PC - Program Counter
 // PM - ProgramMemory
 
-	module main(clock, reset, PMInputDone, DataInputSwitches, 
-				   ProgramAddrIn, ProgramDataIn, ProgramInEnable, out);
+	module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 
 		input clock, reset, PMInputDone;
 		input [7:0] DataInputSwitches;
-		input [15:0] ProgramAddrIn;
 		input ProgramInEnable;
-		input [3:0] ProgramDataIn;
+		input go;
 		
+		output outReady;
 		
-		// control signals from the finite control
-		wire wDoutout, wPMtoFC, 
+		wire DOutout;
+		wire wPMtoFC, 
 			  wDPEnable, wDEnable, wDOutEnable, wBCountEnable,
 			  wDPDecInc, wDDecInc, wPCDecInc, wBCountDecInc,
-			  wDInChoose, wLdPC, wLdOut, wResetBCount;
+			  wDInChoose, wLdPC, wLdOut, wResetBCount, wResetOutsideCounters, wWipeData;
 
-		wire [15:0] wm1ToPM;
-		wire wm2ToPM;
-		
-		
 	
 		// datapath wires
 		wire [15:0] wPCIn;
@@ -51,34 +46,32 @@
 		
 	
 	// PC stuff
-	PC PC0(.clock(clock), .in(wPCIn), .out(wPCOut), .LdPC(wLdPC), .reset(reset));
-	PCALU PCALU0(.in(wPCOut), .out(wPCIn), .PCDecInc(wPCDecInc));
+	PC PC0(.clock(clock), 
+		    .in(wPCIn), 
+			 .out(wPCOut), 
+			 .LdPC(wLdPC), 
+			 .reset(reset));
+			 
+			 
+	PCALU PCALU0(.in(wPCOut), 
+				    .out(wPCIn), 
+					 .PCDecInc(wPCDecInc));
 
-	
-	//assign wPMEnable = 1; // always be able to write to PM
-	
 	// PM stuff
-	pmemory PM0(
-		.address(wm1ToPM), 
-		.clock(wm2ToPM), 
-		.data(ProgramDataIn), 
-		.wren(reset), 
+	pmemory2 PM0(
+		.address(wPCOut), 
+		.clock(clock), 
 		.q(wPMToFC)
 	);
 					
-	//mux(in0, in1, choose, out);
-	mux m2( .in0(clock), .in1(ProgramInEnable), .choose(reset), .out(wm2ToPM) );
-	mux m1( .in0(wPCOut), .in1(ProgramAddrIn), .choose(reset), .out(wm1ToPM) );
-
-	
-	
+// do
 	control C0(
 		.clk(clock), 
 		.inputDone(PMInputDone), 
 		.reset(reset), 
 		.Dout(wDoutout), 
 		.BCount(wBCountToFC), 
-		.out(wPMtoFC), // why is this called out? it should be the "in" at least
+		.in(wPMtoFC),
 		.DPEnable(wDPEnable), 
 		.DEnable(wDEnable), 
 		.DOutEnable(wDOutEnable), 
@@ -90,40 +83,44 @@
 		.DInChoose(WDInChoose), 
 		.LdPC(wLdPC), 
 		.LdOut(wLdOut), 
-		.ResetBCount(wResetBCount)
+		.ResetBCount(wResetBCount),
+		.ResetOutsideCounters(wResetOutsideCounters),
+		.WipeData(wWipeData),
+		.go(go)
 	);
 	
-	
+// end do	
+
 	BCount BCount0(
 		.clock(clock),
 		.out(wBCountToFC),
 		.BCountDecInc(wBCountDecInc),
 		.BCountEnable(wBCountEnable),
-		.reset(reset));
+		.reset(wResetOutsideCounters));
 		
-
+////////////////////////////////////////////////////
 	DP DP0(
 		.clock(clock),
 		.in(wDPIn),
 		.out(wDPOut),
 		.DPEnable(wDPEnable),
-		.reset(reset)
+		.reset(wResetOutsideCounters)
 	);
 
-	data D0(
-		.address(wDPOut),
-		.clock(clock),
-		.data(wDataIn),
-		.wren(wDEnable),
-		.q(wDataOut)
-	);
+	data2 D0(.address(wDPOut), 
+				.clock(clock), 
+				.data(wDataIn), 
+				.wren(wDEnable), 
+				.wipe(wWipeData), 
+				.wipeCounterReset(wResetOutsideCounters), 
+				.q(wDataOut));
 
 	DOut DOut0(
 		.clock(clock),
 		.in(wDataOut),
 		.out(wDOutOut),
 		.DOutEnable(wDOutEnable),
-		.reset(reset)
+		.reset(wResetOutsideCounters)
 	);
 
 	DataPtrALU DPALU0(

@@ -34,6 +34,8 @@
 //agreement for further details.
 
 
+
+
 // synopsys translate_off
 `timescale 1 ps / 1 ps
 // synopsys translate_on
@@ -101,6 +103,73 @@ module data (
 		altsyncram_component.width_byteena_a = 1;
 
 
+endmodule
+
+module data2(address, clock, data, wren, wipe, wipeCounterReset, q);
+
+	input	[15:0]  address;
+	input	  clock;
+	input	[7:0]  data;
+	input	  wren;
+	input wipe;
+	input wipeCounterReset;
+	output	[7:0]  q;
+	
+	reg [15:0] resetCounter;
+	
+	wire [15:0] inAddress;
+	wire [7:0] inData;
+	wire inWren;
+	
+	always @(negedge clock) 
+	begin
+		if (wipeCounterReset == 1'b1)
+		begin
+		resetCounter = 16'b0 - 1;
+		end
+		else if (wipe) 
+		begin
+			resetCounter = resetCounter + 1'b1;
+		end
+	end
+	
+
+	assign inWren = wren | wipe;
+	
+	mux16 mux0(address, resetCounter, wipe, inAddress);
+	mux8WithZero mux2(data, wipe, inData);
+	
+	data data0(.address(inAddress), .clock(clock), .data(inData), .wren(inWren), .q(q));
+	
+endmodule
+
+module mux16(in0, in1, choose, out);
+	input [15:0] in0, in1;
+	input choose;
+	output reg [15:0] out;
+
+	always @(*)
+	begin
+		if (choose)
+			out = in1;
+		else
+			out = in0;
+	end
+endmodule
+
+
+module mux8WithZero(in0, choose, out);
+	input [7:0] in0;
+	input choose;
+	output reg [7:0] out;
+
+	always @(*)
+	begin
+		if (choose)
+			out = 8'b0;
+		else
+			out = in0;
+	end
 endmodule
 
 // ============================================================
