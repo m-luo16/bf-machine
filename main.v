@@ -25,7 +25,8 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
     
    wire	       wDPEnable, wDEnable, wDOutEnable, wBCountEnable,
 	       wDPDecInc, wDDecInc, wPCDecInc, wBCountDecInc,
-	       wDInChoose, wLdPC, wLdOut, wResetBCount, wResetOutsideCounters;
+	       wDInChoose, wLdPC, wLdOut, wResetBCount;
+   
    
    
    // datapath wires
@@ -85,7 +86,7 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 	      .LdPC(wLdPC), 
 	      .LdOut(wLdOut), 
 	      .ResetBCount(wResetBCount),
-	      .ResetOutsideCounters(wResetOutsideCounters),	      
+	      .ResetOutsideCounters(reset),	      
 	      .go(go)
 	      );
    
@@ -96,14 +97,14 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 		  .out(wBCountToFC),
 		  .BCountDecInc(wBCountDecInc),
 		  .BCountEnable(wBCountEnable),
-		  .reset(wResetOutsideCounters));
+		  .reset(reset));
       
    DP DP0(
 	  .clock(clock),
 	  .in(wDPIn),
 	  .out(wDPOut),
 	  .DPEnable(wDPEnable),
-	  .reset(wResetOutsideCounters)
+	  .reset(reset)
 	  );
    
    data3 D0(.address(wDPOut), 
@@ -118,7 +119,7 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 	      .in(wDataOut),
 	      .out(wDOutOut),
 	      .DOutEnable(wDOutEnable),
-	      .reset(wResetOutsideCounters)
+	      .reset(reset)
 	      );
 
    DataPtrALU DPALU0(

@@ -71,20 +71,20 @@ module control(
         case (current_state)
            start: next_state = hold1;
 			  hold1: next_state = hold;
-			  hold: next_state = go? PCinc: hold;
+			  hold: next_state = go? read : hold;
 			  PCinc: next_state = read;
             read: begin
                 case (in)
-                    smaller: next_state <= q0;
-                    greater: next_state <= q1;
-                    plus: next_state <= q2;
-                    minus: next_state <= q3;
-                    openBracket: next_state <= q4;
-                    closeBracket: next_state <= q5;
-                    dot: next_state <= q6;
-                    comma: next_state <= q7;
-                    stop_c: next_state <= stop;
-                    default: next_state <= INVALID;
+                    smaller: next_state = q0;
+                    greater: next_state = q1;
+                    plus: next_state = q2;
+                    minus: next_state = q3;
+                    openBracket: next_state = q4;
+                    closeBracket: next_state = q5;
+                    dot: next_state = q6;
+                    comma: next_state = q7;
+                    stop_c: next_state = stop;
+                    default: next_state = INVALID;
                 endcase
             end
             q0: next_state <= PCinc;
@@ -145,7 +145,7 @@ module control(
             q61: next_state = PCinc;
             q7: next_state = inputDone ? q71 : q7;
 				q71: next_state = !inputDone ? PCinc: q71;
-            stop: next_state = start;
+            stop: next_state = stop;
             default: next_state = start;
         endcase
     end // state_table
@@ -179,6 +179,8 @@ module control(
         read: begin
         end
         PCinc: begin
+           LdPC = 1;
+           PCDecInc = 0;
         end
         q0: begin
         DPEnable = 1;

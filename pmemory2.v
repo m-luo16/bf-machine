@@ -13,7 +13,7 @@ module pmemory2 (
    begin
       $readmemb("out.bf", rom);
    end
-   always @ (posedge clock)
+   always @ (*)
    begin
       q <= rom[address];
    end
