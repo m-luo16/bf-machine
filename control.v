@@ -9,9 +9,10 @@ module control(
 
     output reg DPEnable, DEnable, DOutEnable, BCountEnable,
     DPDecInc, DDecInc, PCDecInc, BCountDecInc,
-    DInChoose, LdPC, LdOut, ResetBCount, ResetOutsideCounters, WipeData
+    DInChoose, LdPC, LdOut, ResetBCount, ResetOutsideCounters
     );
 
+   
     reg [5:0] current_state, next_state; 
 	 reg [15:0] reset_memory_counter;
 
@@ -165,8 +166,7 @@ module control(
         LdPC = 0;
         LdOut = 0;
         ResetBCount = 0;
-		  ResetOutsideCounters = 0;
-		  WipeData = 0;
+		  ResetOutsideCounters = 0;		  
 
         case (current_state)
         start: begin
@@ -174,8 +174,7 @@ module control(
         end
 		  h1: begin
 		  end
-		  hold: begin
-			WipeData = 1; // the machine will be in this state until go is high
+		  hold: begin			
 		  end
         read: begin
         end
