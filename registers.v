@@ -1,17 +1,16 @@
 module PC (clock, in, out, LdPC, reset);
 	input clock;
-	input [15:0] in;
+	input [7:0] in;
 	input LdPC;
 	input reset;
-	output [15:0] out;
+	output reg [7:0] out;
 
-	reg [15:0] out;
 	
 	always @(posedge clock)
 	begin
 		if (reset)
 		begin
-			out <= 16'b0;
+			out <= 0;
 		end
 		else if (LdPC)
 		begin
@@ -36,15 +35,15 @@ module BCount (clock, out, BCountDecInc, BCountEnable, reset);
 	begin
 		if (reset)
 		begin
-			out <= 8'b0;
+			out <= 0;
 		end
 		else if (BCountEnable & !BCountDecInc)
 		begin
-			out <= out + 8'b1;
+			out <= out + 1;
 		end
 		else if (BCountEnable & BCountDecInc)
 		begin
-			out <= out - 8'b1;
+			out <= out - 1;
 		end
 	end
 
@@ -54,8 +53,8 @@ endmodule
 
 module DP (clock, in, out, DPEnable, reset);
 	input clock, DPEnable, reset;
-	input [15:0] in;
-	output reg [15:0] out;
+	input [7:0] in;
+	output reg [7:0] out;
 
 	always @(posedge clock)
 	begin
@@ -72,8 +71,8 @@ endmodule
 
 module DOut (clock, in, out, DOutEnable, reset);
 	input clock, DOutEnable, reset;
-	input [15:0] in;
-	output reg [15:0] out;
+	input [7:0] in;
+	output reg [7:0] out;
 
 	always @(posedge clock)
 	begin

@@ -2,7 +2,7 @@
 
 
 module pmemory2 (
-   input [(`PMAW-1):0] addr,
+   input [(`PMAW-1):0] address,
    input clock, 
    output reg [3:0] q
 );
@@ -11,11 +11,11 @@ module pmemory2 (
    initial // Read the memory contents in the file
            // dual_port_rom_init.txt. 
    begin
-      $readmemb("rom_init.txt", rom);
+      $readmemb("out.bf", rom);
    end
    always @ (posedge clock)
    begin
-      q <= rom[addr];
+      q <= rom[address];
    end
 	
 endmodule

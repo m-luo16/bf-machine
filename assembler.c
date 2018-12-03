@@ -26,7 +26,7 @@
 
 int main(int argc, char **argv) {
     if(argc != 3) {
-        fprintf(stderr, "Pleases include assembly file, then name of output file.\n");
+        fprintf(stderr, "Usage: ./assembler input_file output_file.\n");
         exit(-1);
     }
 

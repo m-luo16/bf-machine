@@ -14,11 +14,11 @@ module control(
 
    
     reg [5:0] current_state, next_state; 
-	 reg [15:0] reset_memory_counter;
+	 reg [7:0] reset_memory_counter;
 
     localparam
     start = 6'd0, // Start state: reset PC, data_ptr amd memory to zero
-	 h1 = 6'd1, 
+	 hold1 = 6'd1, 
 	 hold = 6'd2,
     read = 6'd3, // Reading the command that PC is pointing to
     PCinc = 6'd4, // Increment the PC to the next command
@@ -70,11 +70,11 @@ module control(
 	else
         case (current_state)
            start: next_state = hold1;
-			  h1: next_state = hold;
+			  hold1: next_state = hold;
 			  hold: next_state = go? PCinc: hold;
 			  PCinc: next_state = read;
             read: begin
-                case (out)
+                case (in)
                     smaller: next_state <= q0;
                     greater: next_state <= q1;
                     plus: next_state <= q2;
@@ -102,7 +102,7 @@ module control(
             end
             q42: next_state = q43;
             q43: begin
-                case (out)
+                case (in)
                     closeBracket: next_state = q44;
                     openBracket: next_state = q42;
                     default: next_state = q46;
@@ -126,7 +126,7 @@ module control(
             end
             q52: next_state = q53;
             q53: begin
-                case (out)
+                case (in)
                     closeBracket: next_state = q52;
                     openBracket: next_state = q54;
                     default: next_state = q56;
@@ -172,7 +172,7 @@ module control(
         start: begin
 			ResetOutsideCounters= 1;
         end
-		  h1: begin
+		  hold1: begin
 		  end
 		  hold: begin			
 		  end
@@ -231,6 +231,7 @@ module control(
 		  q47: begin
 		  LdPC = 1;
 		  PCDecInc = 0;
+        end
         q5: begin
         DOutEnable = 1;
         ResetBCount = 1;
@@ -258,6 +259,7 @@ module control(
 		  q57: begin
 		  LdPC = 1;
 		  PCDecInc = 1;
+        end
         q6: begin
         DOutEnable = 1;
         end

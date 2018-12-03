@@ -1,4 +1,6 @@
-
+`define PMAW 8
+`define DAW 8
+`define DOW 8
 
 /////////////////////////////////////////////////////////////////////////////////////
 // conventions :
@@ -15,25 +17,24 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 
    input clock, reset, PMInputDone;
    input [7:0] DataInputSwitches;
-   input       ProgramInEnable;
    input       go;
    
-   output      outReady;
+   input      outReady;
    
    wire        DOutout;
-   wire        wPMtoFC, 
-	       wDPEnable, wDEnable, wDOutEnable, wBCountEnable,
+    
+   wire	       wDPEnable, wDEnable, wDOutEnable, wBCountEnable,
 	       wDPDecInc, wDDecInc, wPCDecInc, wBCountDecInc,
 	       wDInChoose, wLdPC, wLdOut, wResetBCount, wResetOutsideCounters;
    
    
    // datapath wires
-   wire [15:0] wPCIn;
-   wire [15:0] wPCOut;
+   wire [7:0] wPCIn;
+   wire [7:0] wPCOut;
    wire [3:0]  wPMToFC;
    wire [7:0]  wBCountToFC;
-   wire [15:0] wDPIn;
-   wire [15:0] wDPOut;
+   wire [7:0] wDPIn;
+   wire [7:0] wDPOut;
    wire [7:0]  wDataOut;
    wire [7:0]  wDataIn;
    wire [7:0]  w666;
@@ -69,9 +70,9 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 	      .clk(clock), 
 	      .inputDone(PMInputDone), 
 	      .reset(reset), 
-	      .Dout(wDoutout), 
+	      .Dout(wDOutOut), 
 	      .BCount(wBCountToFC), 
-	      .in(wPMtoFC),
+	      .in(wPMToFC),
 	      .DPEnable(wDPEnable), 
 	      .DEnable(wDEnable), 
 	      .DOutEnable(wDOutEnable), 
@@ -108,7 +109,8 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
    data3 D0(.address(wDPOut), 
 	    .clock(clock), 
 	    .data(wDataIn), 
-	    .wren(wDEnable), 
+	    .wren(wDEnable),
+            .reset(reset),
 	    .q(wDataOut));
 
    DOut DOut0(
