@@ -32,7 +32,7 @@ module PCALU (in, PCDecInc, out);
 
 endmodule
 
-module mux(in0, in1, choose, out);
+module mux8(in0, in1, choose, out);
 	input [7:0] in0, in1;
 	input choose;
 	output reg [7:0] out;

@@ -11,139 +11,132 @@
 // PC - Program Counter
 // PM - ProgramMemory
 
-	module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
+module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 
-		input clock, reset, PMInputDone;
-		input [7:0] DataInputSwitches;
-		input ProgramInEnable;
-		input go;
-		
-		output outReady;
-		
-		wire DOutout;
-		wire wPMtoFC, 
-			  wDPEnable, wDEnable, wDOutEnable, wBCountEnable,
-			  wDPDecInc, wDDecInc, wPCDecInc, wBCountDecInc,
-			  wDInChoose, wLdPC, wLdOut, wResetBCount, wResetOutsideCounters, wWipeData;
+   input clock, reset, PMInputDone;
+   input [7:0] DataInputSwitches;
+   input       ProgramInEnable;
+   input       go;
+   
+   output      outReady;
+   
+   wire        DOutout;
+   wire        wPMtoFC, 
+	       wDPEnable, wDEnable, wDOutEnable, wBCountEnable,
+	       wDPDecInc, wDDecInc, wPCDecInc, wBCountDecInc,
+	       wDInChoose, wLdPC, wLdOut, wResetBCount, wResetOutsideCounters;
+   
+   
+   // datapath wires
+   wire [15:0] wPCIn;
+   wire [15:0] wPCOut;
+   wire [3:0]  wPMToFC;
+   wire [7:0]  wBCountToFC;
+   wire [15:0] wDPIn;
+   wire [15:0] wDPOut;
+   wire [7:0]  wDataOut;
+   wire [7:0]  wDataIn;
+   wire [7:0]  w666;
+   wire [7:0]  wDOutOut;
+   
+   
+   // deal with these later		
+   output [7:0] out;
+   assign out = wDOutOut;
+   
+   
+   // PC stuff
+   PC PC0(.clock(clock), 
+	  .in(wPCIn), 
+	  .out(wPCOut), 
+	  .LdPC(wLdPC), 
+	  .reset(reset));
+   
+   
+   PCALU PCALU0(.in(wPCOut), 
+		.out(wPCIn), 
+		.PCDecInc(wPCDecInc));
 
-	
-		// datapath wires
-		wire [15:0] wPCIn;
-		wire [15:0] wPCOut;
-		wire [3:0] wPMToFC;
-		wire [7:0] wBCountToFC;
-		wire [15:0] wDPIn;
-		wire [15:0] wDPOut;
-		wire [7:0] wDataOut;
-		wire [7:0] wDataIn;
-		wire [7:0] w666;
-		wire [7:0] wDOutOut;
-		
-		
-		// deal with these later		
-		output [7:0] out;
-		assign out = wDOutOut;
-		
-	
-	// PC stuff
-	PC PC0(.clock(clock), 
-		    .in(wPCIn), 
-			 .out(wPCOut), 
-			 .LdPC(wLdPC), 
-			 .reset(reset));
-			 
-			 
-	PCALU PCALU0(.in(wPCOut), 
-				    .out(wPCIn), 
-					 .PCDecInc(wPCDecInc));
-
-	// PM stuff
-	pmemory2 PM0(
+   // PM stuff
+   pmemory2 PM0(
 		.address(wPCOut), 
 		.clock(clock), 
 		.q(wPMToFC)
-	);
-					
-// do
-	control C0(
-		.clk(clock), 
-		.inputDone(PMInputDone), 
-		.reset(reset), 
-		.Dout(wDoutout), 
-		.BCount(wBCountToFC), 
-		.in(wPMtoFC),
-		.DPEnable(wDPEnable), 
-		.DEnable(wDEnable), 
-		.DOutEnable(wDOutEnable), 
-		.BCountEnable(wBCountEnable),
-		.DPDecInc(wDPDecInc), 
-		.DDecInc(wDDecInc), 
-		.PCDecInc(wPCDecInc), 
-		.BCountDecInc(wBCountDecInc),
-		.DInChoose(WDInChoose), 
-		.LdPC(wLdPC), 
-		.LdOut(wLdOut), 
-		.ResetBCount(wResetBCount),
-		.ResetOutsideCounters(wResetOutsideCounters),
-		.WipeData(wWipeData),
-		.go(go)
-	);
-	
-// end do	
+	        );
+   
+   // do
+   control C0(
+	      .clk(clock), 
+	      .inputDone(PMInputDone), 
+	      .reset(reset), 
+	      .Dout(wDoutout), 
+	      .BCount(wBCountToFC), 
+	      .in(wPMtoFC),
+	      .DPEnable(wDPEnable), 
+	      .DEnable(wDEnable), 
+	      .DOutEnable(wDOutEnable), 
+	      .BCountEnable(wBCountEnable),
+	      .DPDecInc(wDPDecInc), 
+	      .DDecInc(wDDecInc), 
+	      .PCDecInc(wPCDecInc), 
+	      .BCountDecInc(wBCountDecInc),
+	      .DInChoose(WDInChoose), 
+	      .LdPC(wLdPC), 
+	      .LdOut(wLdOut), 
+	      .ResetBCount(wResetBCount),
+	      .ResetOutsideCounters(wResetOutsideCounters),	      
+	      .go(go)
+	      );
+   
+   // end do	
+   
+   BCount BCount0(
+		  .clock(clock),
+		  .out(wBCountToFC),
+		  .BCountDecInc(wBCountDecInc),
+		  .BCountEnable(wBCountEnable),
+		  .reset(wResetOutsideCounters));
+      
+   DP DP0(
+	  .clock(clock),
+	  .in(wDPIn),
+	  .out(wDPOut),
+	  .DPEnable(wDPEnable),
+	  .reset(wResetOutsideCounters)
+	  );
+   
+   data3 D0(.address(wDPOut), 
+	    .clock(clock), 
+	    .data(wDataIn), 
+	    .wren(wDEnable), 
+	    .q(wDataOut));
 
-	BCount BCount0(
-		.clock(clock),
-		.out(wBCountToFC),
-		.BCountDecInc(wBCountDecInc),
-		.BCountEnable(wBCountEnable),
-		.reset(wResetOutsideCounters));
-		
-////////////////////////////////////////////////////
-	DP DP0(
-		.clock(clock),
-		.in(wDPIn),
-		.out(wDPOut),
-		.DPEnable(wDPEnable),
-		.reset(wResetOutsideCounters)
-	);
+   DOut DOut0(
+	      .clock(clock),
+	      .in(wDataOut),
+	      .out(wDOutOut),
+	      .DOutEnable(wDOutEnable),
+	      .reset(wResetOutsideCounters)
+	      );
 
-	data2 D0(.address(wDPOut), 
-				.clock(clock), 
-				.data(wDataIn), 
-				.wren(wDEnable), 
-				.wipe(wWipeData), 
-				.wipeCounterReset(wResetOutsideCounters), 
-				.q(wDataOut));
+   DataPtrALU DPALU0(
+		     .in(wDPOut),
+		     .DPDecInc(wDPDecInc),
+		     .out(wDPIn)
+	             );
 
-	DOut DOut0(
-		.clock(clock),
-		.in(wDataOut),
-		.out(wDOutOut),
-		.DOutEnable(wDOutEnable),
-		.reset(wResetOutsideCounters)
-	);
+   DataALU DALU0(
+		 .in(wDPOut),
+		 .DDecInc(wDDecInc),
+		 .out(w666) // W666 on schematic???
+	         );
 
-	DataPtrALU DPALU0(
-		.in(wDPOut),
-		.DPDecInc(wDPDecInc),
-		.out(wDPIn)
-	);
-
-	DataALU DALU0(
-		.in(wDPOut),
-		.DDecInc(wDDecInc),
-		.out(w666) // W666 on schematic???
-	);
-
-	mux M0(
-		.in0(w666), // W666 on schematic???
-		.in1(DataInputSwitches), // Input from switches
-		.choose(wDInChoose),
-		.out(wDataIn)
-	);
-
-
-
+   mux8 M0(
+	  .in0(w666), // W666 on schematic???
+	  .in1(DataInputSwitches), // Input from switches
+	  .choose(wDInChoose),
+	  .out(wDataIn)
+	  );
 
 endmodule
 
