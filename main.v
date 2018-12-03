@@ -21,8 +21,6 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
    
    input      outReady;
    
-   wire        DOutout;
-    
    wire	       wDPEnable, wDEnable, wDOutEnable, wBCountEnable,
 	       wDPDecInc, wDDecInc, wPCDecInc, wBCountDecInc,
 	       wDInChoose, wLdPC, wLdOut, wResetBCount, wResetOutsideCounters;
