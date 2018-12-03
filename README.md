@@ -2,7 +2,7 @@
 
 
 programming:
-Write desired binary code into textfile specified by rom init. Writing starts from address 0, 1, 2, 
+Write desired binary code into textfile specified by rom init. Writing starts from address 0, 1, 2, ...
 
 
 
