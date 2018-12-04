@@ -1,6 +1,7 @@
 module control(
    input clk,
    inputDone, // high if the input from the switches is done (during "," operation), low otherwise
+	outputDone,
 	reset,
 	go, // start the excecution of the program. The state of the FC should be "hold"
 	input [7:0] Dout,  // output register of Program Data
@@ -9,13 +10,15 @@ module control(
 
     output reg DPEnable, DEnable, DOutEnable, BCountEnable,
     DPDecInc, DDecInc, PCDecInc, BCountDecInc,
-    DInChoose, LdPC, LdOut, ResetBCount, ResetOutsideCounters
+    DInChoose, LdPC, LdOut, ResetBCount,
+	 
+	 output reg [5:0] current_state
     );
 
-   
-    reg [5:0] current_state, next_state; 
+    reg [5:0] next_state; 
 	 reg [7:0] reset_memory_counter;
 
+	 
     localparam
     start = 6'd0, // Start state: reset PC, data_ptr amd memory to zero
 	 hold1 = 6'd1, 
@@ -142,7 +145,7 @@ module control(
             q56: next_state = q57;
 				q57: next_state = q53;
             q6: next_state = q61;
-            q61: next_state = PCinc;
+            q61: next_state = outputDone ? PCinc: q61;
             q7: next_state = inputDone ? q71 : q7;
 				q71: next_state = !inputDone ? PCinc: q71;
             stop: next_state = stop;
@@ -165,12 +168,10 @@ module control(
         DInChoose = 0;
         LdPC = 0;
         LdOut = 0;
-        ResetBCount = 0;
-		  ResetOutsideCounters = 0;		  
+        ResetBCount = 0;	  
 
         case (current_state)
         start: begin
-			ResetOutsideCounters= 1;
         end
 		  hold1: begin
 		  end

@@ -12,7 +12,7 @@ module data3(address, clock, data, wren, reset, q);
 
    initial
      begin
-        for(i=0; i<255; i=i+1) data_all[i] <= 0;        
+        for(i=0; i<255; i=i+8'b1) data_all[i] <= 8'b0;        
      end
       
    always @(posedge clock)
@@ -21,12 +21,16 @@ module data3(address, clock, data, wren, reset, q);
           begin
              data_all[address] <= data;             
           end 
-        q <= data_all[address];        
+        q <= data_all[address];
+			if (reset)
+				begin
+					for(i=0; i<255; i=i+1) data_all[i] <= 0;
+				end
      end
 
-   always @(posedge reset)
-     begin
-        for(i=0; i<255; i=i+1) data_all[i] <= 0;
-     end
+//   always @(posedge reset)
+//     begin
+//        for(i=0; i<255; i=i+1) data_all[i] <= 0;
+//     end
 
 endmodule

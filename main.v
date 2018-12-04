@@ -13,7 +13,7 @@
 // PC - Program Counter
 // PM - ProgramMemory
 
-module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
+module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go, state);
 
    input clock, reset, PMInputDone;
    input [7:0] DataInputSwitches;
@@ -23,7 +23,7 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
    
    wire	       wDPEnable, wDEnable, wDOutEnable, wBCountEnable,
 	       wDPDecInc, wDDecInc, wPCDecInc, wBCountDecInc,
-	       wDInChoose, wLdPC, wLdOut, wResetBCount;
+	       wDInChoose, wLdPC, wLdOut, wResetBCount, wReset;
    
    
    
@@ -42,7 +42,9 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
    
    // deal with these later		
    output [7:0] out;
+	output [5:0] state;
    assign out = wDOutOut;
+	assign wReset = reset;
    
    
    // PC stuff
@@ -50,7 +52,7 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 	  .in(wPCIn), 
 	  .out(wPCOut), 
 	  .LdPC(wLdPC), 
-	  .reset(reset));
+	  .reset(wReset));
    
    
    PCALU PCALU0(.in(wPCOut), 
@@ -67,8 +69,9 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
    // do
    control C0(
 	      .clk(clock), 
-	      .inputDone(PMInputDone), 
-	      .reset(reset), 
+	      .inputDone(PMInputDone),
+		  .outputDone(outReady),
+	      .reset(wReset), 
 	      .Dout(wDOutOut), 
 	      .BCount(wBCountToFC), 
 	      .in(wPMToFC),
@@ -83,9 +86,9 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 	      .DInChoose(WDInChoose), 
 	      .LdPC(wLdPC), 
 	      .LdOut(wLdOut), 
-	      .ResetBCount(wResetBCount),
-	      .ResetOutsideCounters(reset),	      
-	      .go(go)
+	      .ResetBCount(wResetBCount),      
+	      .go(go),
+			.current_state(state)
 	      );
    
    // end do	
@@ -95,21 +98,21 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 		  .out(wBCountToFC),
 		  .BCountDecInc(wBCountDecInc),
 		  .BCountEnable(wBCountEnable),
-		  .reset(reset));
+		  .reset(wReset));
       
    DP DP0(
 	  .clock(clock),
 	  .in(wDPIn),
 	  .out(wDPOut),
 	  .DPEnable(wDPEnable),
-	  .reset(reset)
+	  .reset(wReset)
 	  );
    
    data3 D0(.address(wDPOut), 
 	    .clock(clock), 
 	    .data(wDataIn), 
 	    .wren(wDEnable),
-            .reset(reset),
+       .reset(wReset),
 	    .q(wDataOut));
 
    DOut DOut0(
@@ -117,7 +120,7 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 	      .in(wDataOut),
 	      .out(wDOutOut),
 	      .DOutEnable(wDOutEnable),
-	      .reset(reset)
+	      .reset(wReset)
 	      );
 
    DataPtrALU DPALU0(
@@ -127,7 +130,7 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go);
 	             );
 
    DataALU DALU0(
-		 .in(wDPOut),
+		 .in(wDOutOut),
 		 .DDecInc(wDDecInc),
 		 .out(w666) // W666 on schematic???
 	         );
