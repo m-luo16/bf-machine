@@ -15,6 +15,8 @@ module top(CLOCK_50, SW, KEY, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, LEDR);
 	wire [3:0] PCupper;
 	wire [3:0] PClower;
 	
+	wire clock;
+	
 	hex h1(
 		.num(upper),
 		.HEX(HEX1)
@@ -43,11 +45,16 @@ module top(CLOCK_50, SW, KEY, HEX0, HEX1, HEX2, HEX3, HEX4, HEX5, LEDR);
 		.num(DPlower),
 		.HEX(HEX2)
 		);
+		
+	clock1 clk(
+		.clock(CLOCK_50),
+		.out(clock)
+		);
 	
 	main m(
-		.clock(~KEY[1]), 
+		.clock(clock), 
 		.reset(~KEY[0]), 
-		.PMInputDone(0), 
+		.PMInputDone(~KEY[1]), 
 		.DataInputSwitches(SW[7:0]), 
 		.out({upper, lower}), 
 		.outReady(~KEY[2]), 

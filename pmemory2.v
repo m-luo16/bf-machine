@@ -11,7 +11,7 @@ module pmemory2 (
    initial // Read the memory contents in the file
            // dual_port_rom_init.txt. 
    begin
-      $readmemb("out.bf", rom);
+      $readmemb("./bf_programs/decrement.bfo", rom);
    end
    always @ (*)
    begin

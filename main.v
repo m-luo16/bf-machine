@@ -88,7 +88,7 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go, sta
 	      .DDecInc(wDDecInc), 
 	      .PCDecInc(wPCDecInc), 
 	      .BCountDecInc(wBCountDecInc),
-	      .DInChoose(WDInChoose), 
+	      .DInChoose(wDInChoose), 
 	      .LdPC(wLdPC), 
 	      .LdOut(wLdOut), 
 	      .ResetBCount(wResetBCount),      

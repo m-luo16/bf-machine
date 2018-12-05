@@ -3,7 +3,7 @@ module DataPtrALU (in, DPDecInc, out);
 	input DPDecInc;
 	output [7:0] out;
 	
-	assign out = DPDecInc? in - 1: in + 1;
+	assign out = DPDecInc? in - 8'b1: in + 8'b1;
 
 endmodule
 

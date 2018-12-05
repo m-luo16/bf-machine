@@ -17,3 +17,15 @@ Write desired binary code into textfile specified by rom init. Writing starts fr
 | dot | 0110 |
 | comma | 0111 |
 | stop_c | 1111 |
+
+
+
+The following keys are used to control our computer
+
+| KEY      | Action          |
+|--------|:----------:|
+| 0 | Reset |
+| 1 | Input Done |
+| 2 | Output Done |
+| 3 | Go |
+

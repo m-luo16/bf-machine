@@ -136,7 +136,7 @@ module control(
                     default: next_state <= q56;
                 endcase
             end
-            q54: next_state = q55;
+            q54: next_state <= q55;
             q55: begin
                 case (BCount)
                     0: next_state <= PCinc;
