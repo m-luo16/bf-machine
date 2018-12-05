@@ -13,7 +13,7 @@
 // PC - Program Counter
 // PM - ProgramMemory
 
-module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go, state);
+module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go, state, pc, dp);
 
    input clock, reset, PMInputDone;
    input [7:0] DataInputSwitches;
@@ -43,8 +43,13 @@ module main(clock, reset, PMInputDone, DataInputSwitches, out, outReady, go, sta
    // deal with these later		
    output [7:0] out;
 	output [5:0] state;
+	output [7:0] pc;
+	output [7:0] dp;
    assign out = wDOutOut;
 	assign wReset = reset;
+	
+	assign dp = wDPOut;
+	assign pc = wPCOut;
    
    
    // PC stuff

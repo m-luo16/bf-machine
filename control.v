@@ -49,6 +49,7 @@ module control(
 	 q57 = 6'd26, // BCount wasn't a 0 ofter the previous "[" (Haven't found correct opening brace). Decrement PC and try again. 
     q6 = 6'd27, // Get ready to display whatever data pointer is pointing to. 
     q61 = 6'd28, // Load Dout onto out.
+	 q62 = 6'd35, // Wait for outputDone to be low
     q7 = 6'd29, // Get ready to store the value on input switches to whatever data pointer is pointing to. 
 	 q71 = 6'd30, // Load the value on input switches. Increment PC after. 
     stop = 6'd31, // PC command was stop. Transition to start and get ready to do more commands. 
@@ -68,26 +69,26 @@ module control(
 
     begin: state_table 
 	 	if (reset) begin
-		next_state = start;
+		next_state <= start;
 	end
 	else
         case (current_state)
-           start: next_state = hold1;
-			  hold1: next_state = hold;
-			  hold: next_state = go? read : hold;
-			  PCinc: next_state = read;
+           start: next_state <= hold1;
+			  hold1: next_state <= hold;
+			  hold: next_state <= go? read : hold;
+			  PCinc: next_state <= read;
             read: begin
                 case (in)
-                    smaller: next_state = q0;
-                    greater: next_state = q1;
-                    plus: next_state = q2;
-                    minus: next_state = q3;
-                    openBracket: next_state = q4;
-                    closeBracket: next_state = q5;
-                    dot: next_state = q6;
-                    comma: next_state = q7;
-                    stop_c: next_state = stop;
-                    default: next_state = INVALID;
+                    smaller: next_state <= q0;
+                    greater: next_state <= q1;
+                    plus: next_state <= q2;
+                    minus: next_state <= q3;
+                    openBracket: next_state <= q4;
+                    closeBracket: next_state <= q5;
+                    dot: next_state <= q6;
+                    comma: next_state <= q7;
+                    stop_c: next_state <= stop;
+                    default: next_state <= INVALID;
                 endcase
             end
             q0: next_state <= PCinc;
@@ -99,57 +100,58 @@ module control(
             q4: next_state <= q41;
             q41: begin
                 case (Dout)
-                    0: next_state = q42;
-                    default: next_state = PCinc;
+                    0: next_state <= q42;
+                    default: next_state <= PCinc;
                 endcase
             end
-            q42: next_state = q43;
+            q42: next_state <= q43;
             q43: begin
                 case (in)
-                    closeBracket: next_state = q44;
-                    openBracket: next_state = q42;
-                    default: next_state = q46;
+                    closeBracket: next_state <= q44;
+                    openBracket: next_state <= q42;
+                    default: next_state <= q46;
                 endcase
             end
-            q44: next_state = q45;
+            q44: next_state <= q45;
             q45: begin
                 case (BCount)
-                    0: next_state = PCinc;
-                    default: next_state = q45;
+                    0: next_state <= PCinc;
+                    default: next_state <= q47;
                 endcase
             end
-            q46: next_state = q47;
-				q47: next_state = q43;
-            q5: next_state = q51;
+            q46: next_state <= q43;
+				q47: next_state <= q43;
+            q5: next_state <= q51;
             q51: begin
                 case (Dout)
-                    0: next_state = PCinc;
-                    default: next_state = q52;
+                    0: next_state <= PCinc;
+                    default: next_state <= q52;
                 endcase
             end
-            q52: next_state = q53;
+            q52: next_state <= q53;
             q53: begin
                 case (in)
-                    closeBracket: next_state = q52;
-                    openBracket: next_state = q54;
-                    default: next_state = q56;
+                    closeBracket: next_state <= q52;
+                    openBracket: next_state <= q54;
+                    default: next_state <= q56;
                 endcase
             end
             q54: next_state = q55;
             q55: begin
                 case (BCount)
-                    0: next_state = PCinc;
-                    default: next_state = q53;
+                    0: next_state <= PCinc;
+                    default: next_state <= q57;
                 endcase
             end
-            q56: next_state = q57;
-				q57: next_state = q53;
-            q6: next_state = q61;
-            q61: next_state = outputDone ? PCinc: q61;
-            q7: next_state = inputDone ? q71 : q7;
-				q71: next_state = !inputDone ? PCinc: q71;
-            stop: next_state = stop;
-            default: next_state = start;
+            q56: next_state <= q53;
+				q57: next_state <= q53;
+            q6: next_state <= q61;
+            q61: next_state <= outputDone ? q62: q61;
+				q62: next_state <= !outputDone ? PCinc: q62;
+            q7: next_state <= inputDone ? q71 : q7;
+				q71: next_state <= !inputDone ? PCinc: q71;
+            stop: next_state <= stop;
+            default: next_state <= start;
         endcase
     end // state_table
 	
@@ -223,7 +225,7 @@ module control(
         end
         q44: begin
         BCountEnable = 1;
-        BCountDecInc = 0;
+        BCountDecInc = 1;
         end
         q45: begin
         end
@@ -251,7 +253,7 @@ module control(
         end
         q54: begin
         BCountEnable = 1;
-        BCountDecInc = 0;
+        BCountDecInc = 1;
         end
         q55: begin
         end
@@ -269,6 +271,8 @@ module control(
         q61: begin
         LdOut = 1;
         end
+		  q62: begin
+		  end
         q7: begin
         DInChoose = 1;
         DEnable = 1;
