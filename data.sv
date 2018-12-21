@@ -27,10 +27,4 @@ module data3(address, clock, data, wren, reset, q);
 					for(i=0; i<255; i=i+1) data_all[i] <= 0;
 				end
      end
-
-//   always @(posedge reset)
-//     begin
-//        for(i=0; i<255; i=i+1) data_all[i] <= 0;
-//     end
-
 endmodule
