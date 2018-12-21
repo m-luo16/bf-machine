@@ -1,6 +1,10 @@
 # bf-machine
 > A Verilog module used to run [BF](https://esolangs.org/wiki/brainfuck) code on an FPGA.
 
+## Requirements
+1. [Quartus Prime](https://www.intel.com/content/www/us/en/software/programmable/quartus-prime/overview.html)
+2. [Altera DE1-SoC Board](https://www.terasic.com.tw/cgi-bin/page/archive.pl?Language=English&No=836) (May work on other FPGAs but untested.)
+
 ## Programming
 0. Read about BF at the above link to familiarize yourself with the available commands. (We added an extra stop command `s` to be included at the end of every program.)
 1. Write desired code into some input file. 
@@ -23,8 +27,9 @@ We have included a few example `.sof` files in the `bf_programs` folder.
 ## Tables
 
 Our BF to binary mappings. 
+
 | op | code|
-|:-:|:----:|
+|:----:|:----:|
 | < | 0000 |
 | > | 0001 |
 | + | 0010 |
@@ -37,7 +42,7 @@ Our BF to binary mappings.
 
 The following keys are used to control our computer
 
-| KEY| Action |
+| KEY | Action |
 |:--:|:----------:|
 | 0 | Reset |
 | 1 | Input Done |
@@ -45,11 +50,12 @@ The following keys are used to control our computer
 | 3 | Go |
 
 HEX outputs
+
 | HEX | Purpose |
 |:---:|:-------:|
-|HEX5|Program Counter (Upper bits)|
-|HEX4|Program Counter (Lower bits)|
-|HEX3|Data Pointer (Upper bits)|
-|HEX2|Data Pointer (Lower bits)|
-|HEX1|Output Number (Upper bits)|
-|HEX0|Ouput Number (Lower bits)|
+| HEX5 | Program Counter (Upper bits) |
+| HEX4 | Program Counter (Lower bits) |
+| HEX3 | Data Pointer (Upper bits) |
+| HEX2 | Data Pointer (Lower bits) |
+| HEX1 | Output Number (Upper bits) |
+| HEX0 | Ouput Number (Lower bits) |
